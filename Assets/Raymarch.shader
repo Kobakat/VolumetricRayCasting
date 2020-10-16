@@ -53,6 +53,8 @@
             {
                 float3 origin;
                 float3 direction;
+                float3 position;
+                float depth;
             };
 
             //Describes the distance from a sphere centered on P
@@ -99,23 +101,22 @@
                 for (int i = 0; i < maxSteps; i++) 
                 {
                     //Determine the distance from the nearest shape in the scene
-                    float3 pos = r.origin + r.direction * dst;                  
-                    float surfDist = SurfaceDistance(pos);
+                    r.position = r.origin + r.direction * dst;                  
+                    float surfDist = SurfaceDistance(r.position);
 
-                    
                     //If the distance is sufficently small...
                     if (surfDist < epsilon)
                     {
                         //We "hit" the surface. Calculate the normal vector of the pixel and shade it based on the angle from the rays of light
-                        float3 n = CalculateNormal(pos);
+                        float3 n = CalculateNormal(r.position);
                         
                         //This uses the lambertian model of lighting https://en.wikipedia.org/wiki/Lambertian_reflectance
-                        float l = dot(-_Light.xyz, n).rrr;
+                        float light = dot(-_Light.xyz, n).rrr;
 
                         
                         //Set the color of the pixel
                         //TODO replace alpha channel with a variable for transparency
-                        pixelColor = fixed4(_MainColor.rgb * l, 1);
+                        pixelColor = fixed4(_MainColor.rgb * light, 1);
                         break;
                     }
 
@@ -124,8 +125,10 @@
                     dst += surfDist;
                     
                     
-                    //If the distance is very large, we give up and break early
-                    if (dst > maxDist)
+                    //If the distance is very large or a mesh is in the way
+                    //we give up and break early
+
+                    if (dst > maxDist || dst >= r.depth)
                         break;
                 }
 
@@ -150,10 +153,13 @@
                 //Absval function prevents scene from inverting
                 o.ray /= abs(o.ray.z);
 
+                //Places ray in worldspace so the depth buffer is calculated properly
                 o.ray = mul(_CamMatrix, o.ray);
                 return o;
             }
-            
+
+            uniform sampler2D _CameraDepthTexture;
+
             //Runs for every pixel on the screen
             fixed4 frag(v2f i) : SV_Target
             {
@@ -161,8 +167,12 @@
                 
                 //https://docs.unity3d.com/Manual/SL-UnityShaderVariables.html
                 r.direction = normalize(i.ray.xyz);
-                r.origin = _WorldSpaceCameraPos;           
-                
+                r.origin = _WorldSpaceCameraPos;                          
+
+                r.depth = LinearEyeDepth(tex2D(_CameraDepthTexture, i.uv).r);
+                r.depth *= length(i.ray.xyz);
+
+
                 //The color of the pixel before any post processing done by the raymarch shader
                 fixed3 base = tex2D(_MainTex, i.uv);
 
