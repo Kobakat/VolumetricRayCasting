@@ -1,5 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Security.Cryptography;
+using UnityEditorInternal;
 
 [ExecuteInEditMode]
 [RequireComponent(typeof(Camera))]
@@ -13,6 +15,7 @@ public class RaymarchController : MonoBehaviour
 
     private Material _material;
     private Camera _cam;
+    private Transform _light;
 
     public Material Material
     {
@@ -24,7 +27,6 @@ public class RaymarchController : MonoBehaviour
         }
     }
 
-
     public Camera Cam
     {
         get
@@ -32,6 +34,28 @@ public class RaymarchController : MonoBehaviour
             if (!_cam)
                 _cam = GetComponent<Camera>();
             return _cam;
+        }
+    }
+
+    public Transform Light
+    {
+        get
+        {
+            Light l;
+
+            if (!_light)
+            {
+                l = (Light)FindObjectOfType(typeof(Light));
+                
+                if(!l)
+                {
+                    return _light;
+                }
+
+                _light = l.transform;
+            }
+                
+            return _light;
         }
     }
 
@@ -66,7 +90,7 @@ public class RaymarchController : MonoBehaviour
         GL.PopMatrix();
     }
 
-    //Passing values to GPU
+    //Unity event function, called when an image is done rendering to apply post processing effects
     [ImageEffectOpaque]
     void OnRenderImage(RenderTexture source, RenderTexture destination)
     {
@@ -76,9 +100,11 @@ public class RaymarchController : MonoBehaviour
             return;
         }
 
+        //Passing Values to raymarch shader
         Material.SetMatrix("_Frustum", GetFrustum(Cam));
         Material.SetMatrix("_CamMatrix", Cam.cameraToWorldMatrix);
         Material.SetColor("_MainColor", _MainColor);
+        Material.SetVector("_Light", Light ? Light.forward : Vector3.down);
 
         Blit(source, destination, Material, 0);
     }
