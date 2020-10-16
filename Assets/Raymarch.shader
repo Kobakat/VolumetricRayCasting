@@ -18,9 +18,10 @@
             #include "UnityCG.cginc"
 
             sampler2D _MainTex;
+            uniform fixed4 _MainColor;
             uniform float4x4 _Frustum;
-            uniform float4x4 _CamMatrix;
-            uniform float4x4 _MainColor;
+            uniform float4x4 _CamMatrix;            
+            uniform float3 _Light;
             
 
             //How many times each ray is marched
@@ -73,6 +74,19 @@
                 
             }
 
+            //For a signed distances field, the normal of any given point is defined as the gradient of the distance field
+            //As such, subtracting the distance field of a slight smaller value by a slight large value produces a good approximation
+            //This function is exceptionally expensive as it requires 6 more calls of a sign distance function PER PIXEL hit
+            float3 CalculateNormal(float3 p)
+            {
+                                      
+                float x = SurfaceDistance(float3(p.x + epsilon, p.y, p.z)) - SurfaceDistance(float3(p.x - epsilon, p.y, p.z));
+                float y = SurfaceDistance(float3(p.x, p.y + epsilon, p.z)) - SurfaceDistance(float3(p.x, p.y - epsilon, p.z));
+                float z = SurfaceDistance(float3(p.x, p.y, p.z + epsilon)) - SurfaceDistance(float3(p.x, p.y, p.z - epsilon));
+
+                return normalize(float3(x,y,z));
+            }
+
             //For each pixel on the screen
             fixed4 raymarch(ray r) 
             {
@@ -92,9 +106,16 @@
                     //If the distance is sufficently small...
                     if (surfDist < epsilon)
                     {
-                        //We "hit" the surface. Color the pixel.
-                        pixelColor = fixed4(1, 1, 1, 1);
+                        //We "hit" the surface. Calculate the normal vector of the pixel and shade it based on the angle from the rays of light
+                        float3 n = CalculateNormal(pos);
+                        
+                        //This uses the lambertian model of lighting https://en.wikipedia.org/wiki/Lambertian_reflectance
+                        float l = dot(-_Light.xyz, n).rrr;
 
+                        
+                        //Set the color of the pixel
+                        //TODO replace alpha channel with a variable for transparency
+                        pixelColor = fixed4(_MainColor.rgb * l, 1);
                         break;
                     }
 
@@ -142,9 +163,14 @@
                 r.direction = normalize(i.ray.xyz);
                 r.origin = _WorldSpaceCameraPos;           
                 
+                //The color of the pixel before any post processing done by the raymarch shader
+                fixed3 base = tex2D(_MainTex, i.uv);
+
+                //The color of the pixel after the raymarch function
                 fixed4 col = raymarch(r);
-             
-                return col;
+                
+                //Alpha blending function, derived via https://en.wikipedia.org/wiki/Alpha_compositing#Alpha_blending
+                return fixed4(base * (1.0 - col.w) + col.xyz * col.w, 1.0);
             }
             ENDCG
         }
