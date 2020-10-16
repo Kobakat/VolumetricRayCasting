@@ -1,7 +1,5 @@
 ﻿using UnityEngine;
 using System.Collections;
-using System.Security.Cryptography;
-using UnityEditorInternal;
 
 [ExecuteInEditMode]
 [RequireComponent(typeof(Camera))]
@@ -11,11 +9,13 @@ public class RaymarchController : MonoBehaviour
     public Color _MainColor;
 
     [SerializeField]
-    private Shader _Shader;
+    private Shader _Shader = null;
 
     private Material _material;
     private Camera _cam;
     private Transform _light;
+
+    
 
     public Material Material
     {
@@ -33,6 +33,9 @@ public class RaymarchController : MonoBehaviour
         {
             if (!_cam)
                 _cam = GetComponent<Camera>();
+            //Sometimes unity cameras don't render depth texture by default?
+            //I spent a good hour and a half figuring that out...
+            _cam.depthTextureMode = DepthTextureMode.Depth;
             return _cam;
         }
     }
