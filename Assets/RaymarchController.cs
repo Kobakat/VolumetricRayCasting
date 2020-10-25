@@ -4,7 +4,7 @@ using System.Collections;
 [ExecuteInEditMode]
 [RequireComponent(typeof(Camera))]
 
-public class RaymarchController : MonoBehaviour
+public class RaymarchController : SceneViewFilter
 {
     public Color _MainColor;
 
