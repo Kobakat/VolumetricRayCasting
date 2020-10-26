@@ -1,7 +1,5 @@
 ﻿using UnityEngine;
-#if UNITY_EDITOR
 using UnityEditor;
-#endif
 
 /// <summary>
 /// Renders the game view in the scene view
@@ -9,7 +7,7 @@ using UnityEditor;
 /// </summary>
 public class SceneViewFilter : MonoBehaviour
 {
-#if UNITY_EDITOR
+
     bool hasChanged = false;
 
     public virtual void OnValidate()
@@ -70,5 +68,4 @@ public class SceneViewFilter : MonoBehaviour
             EditorUtility.CopySerialized(f, newFilter);
         }
     }
-#endif
 }

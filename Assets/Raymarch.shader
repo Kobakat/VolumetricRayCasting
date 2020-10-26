@@ -16,6 +16,7 @@
             #pragma fragment frag
 
             #include "UnityCG.cginc"
+            #include "SDFunc.cginc"
 
             sampler2D _MainTex;
             uniform fixed4 _MainColor;
@@ -57,22 +58,14 @@
                 float depth;
             };
 
-            //Describes the distance from a sphere centered on P
-            float sdSphere(float3 p, float r)
-            {
-                //HACK
-                //length uses sqrt function, far too expensive in iterative multipixel function
-                return length(p) - r;
-            }
-
-
+            
             //This function will later be adjusted to handle more shapes & different kinds
             //For now it will just draw the distance from a sphere
             float SurfaceDistance(float3 p)
             {
                 //HACK
                 //radius should not be a magic number
-                return(sdSphere(p, 1));
+                return(sdCone(p, float2(0.5, 0.5), 1));
                 
             }
 
