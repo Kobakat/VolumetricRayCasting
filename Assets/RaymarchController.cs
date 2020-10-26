@@ -1,5 +1,5 @@
 ﻿using UnityEngine;
-using System.Collections;
+using System.Collections.Generic;
 
 [ExecuteInEditMode]
 [RequireComponent(typeof(Camera))]
@@ -8,8 +8,8 @@ public class RaymarchController : SceneViewFilter
 {
     public Color _MainColor;
 
-    [SerializeField]
-    private Shader _Shader = null;
+    [SerializeField] private Shader _Shader = null;
+    public RaymarchShape _shape;
 
     private Material _material;
     private Camera _cam;
@@ -103,11 +103,28 @@ public class RaymarchController : SceneViewFilter
             return;
         }
 
-        //Passing Values to raymarch shader
+        //Passing Scene Values to raymarch shader
         Material.SetMatrix("_Frustum", GetFrustum(Cam));
         Material.SetMatrix("_CamMatrix", Cam.cameraToWorldMatrix);
         Material.SetColor("_MainColor", _MainColor);
         Material.SetVector("_Light", Light ? Light.forward : Vector3.down);
+        
+        //Pass Shape specific values to shader
+        Material.SetVector("_Position", _shape.transform.position);
+        Material.SetInt("_Shape", (int)_shape.shape);
+
+        //This seems pretty bad, can probably be better
+        //I should find a way to encapsulate these in a single struct
+        //and pass it in all at once
+        Material.SetFloat("_SphereRadius", _shape.sphereRadius);
+        Material.SetFloat("_TorusInner", _shape.torusInnerRadius);
+        Material.SetFloat("_TorusOuter", _shape.torusOuterRadius);
+        Material.SetFloat("_BoxRoundness", _shape.roundBoxFactor);
+        Material.SetFloat("_ConeHeight", _shape.coneHeight);
+
+        Material.SetVector("_Box", _shape.boxDimensions);
+        Material.SetVector("_RoundBox", _shape.roundBoxDimensions);
+        Material.SetVector("_ConeRatio", _shape.coneRatio);
 
         Blit(source, destination, Material, 0);
     }

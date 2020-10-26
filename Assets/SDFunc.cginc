@@ -14,11 +14,12 @@ float sdSphere(float3 p, float r)
 
 //p = position
 //b = box dimensions
-float sdBox(float p, float3 b)
+float sdBox(float3 p, float3 b)
 {
 	float3 q = abs(p) - b;
 	return length(max(q, 0.0)) + min(max(q.x, max(q.y, q.z)), 0.0);
 }
+
 
 //p = position
 //b = box dimensions
@@ -32,7 +33,7 @@ float sdRoundBox(float3 p, float3 b, float r)
 //p = position
 //o = outer radius
 //i = inner raidus
-float sdTorus(float3 p, float o, float i)
+float sdTorus(float3 p, float i, float o)
 {
 	float2 q = float2(length(p.xz) - i, p.y);
 	return length(q) - o;

@@ -18,11 +18,27 @@
             #include "UnityCG.cginc"
             #include "SDFunc.cginc"
 
+            //Scene info
             sampler2D _MainTex;
             uniform fixed4 _MainColor;
             uniform float4x4 _Frustum;
             uniform float4x4 _CamMatrix;            
             uniform float3 _Light;
+
+            //Shape info
+            uniform int _Shape;
+            uniform float3 _Position;
+            
+            uniform float _SphereRadius;
+            uniform float _TorusInner;
+            uniform float _TorusOuter;
+            uniform float _BoxRoundness;
+            uniform float _ConeHeight;
+
+            uniform float2 _ConeRatio;
+            uniform float3 _Box;
+            uniform float3 _RoundBox;
+
             
 
             //How many times each ray is marched
@@ -63,10 +79,32 @@
             //For now it will just draw the distance from a sphere
             float SurfaceDistance(float3 p)
             {
-                //HACK
-                //radius should not be a magic number
-                return(sdCone(p, float2(0.5, 0.5), 1));
-                
+                p -= _Position;
+
+                switch (_Shape) 
+                {
+                    case 0:
+                        return sdSphere(p, _SphereRadius);
+                        break;
+
+                    case 1:
+                        return sdBox(p, _Box);
+                        break;
+
+                    case 2:
+                        return sdTorus(p, _TorusOuter, _TorusInner);
+                        break;
+
+                    case 3:
+                        return sdCone(p, _ConeRatio, _ConeHeight);
+                        break;
+
+                    case 4:
+                        return sdRoundBox(p, _RoundBox, _BoxRoundness);
+                        break;
+                }
+
+                return 0;
             }
 
             //For a signed distances field, the normal of any given point is defined as the gradient of the distance field
