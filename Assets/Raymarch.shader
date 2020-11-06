@@ -25,19 +25,31 @@
             uniform float4x4 _CamMatrix;            
             uniform float3 _Light;
 
-            //Shape info
-            uniform int _Shape;
-            uniform float3 _Position;
-            
-            uniform float _SphereRadius;
-            uniform float _TorusInner;
-            uniform float _TorusOuter;
-            uniform float _BoxRoundness;
-            uniform float _ConeHeight;
+            struct shape 
+            {
+                int _Shape;
+                float3 _Position;
 
-            uniform float2 _ConeRatio;
-            uniform float3 _Box;
-            uniform float3 _RoundBox;
+                float _SphereRadius;
+                float _TorusInner;
+                float _TorusOuter;
+                float _BoxRoundness;
+                float _ConeHeight;
+
+                float2 _ConeRatio;
+                float3 _Box;
+                float3 _RoundBox;
+            };
+            
+            struct operation 
+            {
+                int _Operation;
+                int _ChildCount;
+                
+                StructuredBuffer<shape> shapes;
+            };
+
+            StructuredBuffer<operation> operations;
 
             
 
