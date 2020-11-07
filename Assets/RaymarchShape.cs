@@ -60,8 +60,9 @@ public struct ShapeInfo
     public float coneHeight;
     public Vector2 coneRatio;
 
-    public int GetSize()
+
+    public static int GetSize()
     {
-        return sizeof(float) * 16 + sizeof(int) * 2;
+        return sizeof(float) * 15 + sizeof(int) * 2;
     }
 }

@@ -8,14 +8,19 @@ public class RaymarchController : SceneViewFilter
 {
     public Color _MainColor;
 
-    [SerializeField] private Shader _Shader = null;
-    public RaymarchShape _shape;
+    [SerializeField] Shader _Shader = null;
 
-    private Material _material;
-    private Camera _cam;
-    private Transform _light;
+    Material _material;
+    Camera _cam;
+    Transform _light;
 
-    
+    List<ComputeBuffer> disposeBuffers;
+
+    public Operation Oper;
+    public RaymarchShape r1;
+    public RaymarchShape r2;
+
+
 
     public Material Material
     {
@@ -97,6 +102,8 @@ public class RaymarchController : SceneViewFilter
     [ImageEffectOpaque]
     void OnRenderImage(RenderTexture source, RenderTexture destination)
     {
+        disposeBuffers = new List<ComputeBuffer>();
+
         if (!Material)
         {
             Graphics.Blit(source, destination);
@@ -108,29 +115,19 @@ public class RaymarchController : SceneViewFilter
         Material.SetMatrix("_CamMatrix", Cam.cameraToWorldMatrix);
         Material.SetColor("_MainColor", _MainColor);
         Material.SetVector("_Light", Light ? Light.forward : Vector3.down);
-        
-        //Pass Shape specific values to shader
-        Material.SetVector("_Position", _shape.transform.position);
-        Material.SetInt("_Shape", (int)_shape.shape);
 
-        //This seems pretty bad, can probably be better
-        //I should find a way to encapsulate these in a single struct
-        //and pass it in all at once
-        Material.SetFloat("_SphereRadius", _shape.sphereRadius);
-        Material.SetFloat("_TorusInner", _shape.torusInnerRadius);
-        Material.SetFloat("_TorusOuter", _shape.torusOuterRadius);
-        Material.SetFloat("_BoxRoundness", _shape.roundBoxFactor);
-        Material.SetFloat("_ConeHeight", _shape.coneHeight);
-
-        Material.SetVector("_Box", _shape.boxDimensions);
-        Material.SetVector("_RoundBox", _shape.roundBoxDimensions);
-        Material.SetVector("_ConeRatio", _shape.coneRatio);
+        FillBuffer();
 
         Blit(source, destination, Material, 0);
+
+        foreach (ComputeBuffer buffer in disposeBuffers)
+        {
+            buffer.Dispose();
+        }
     }
 
     //Returns a matrix containing the corner positions of the camera's view frustum
-    private Matrix4x4 GetFrustum(Camera cam)
+    Matrix4x4 GetFrustum(Camera cam)
     {
         Matrix4x4 corners = Matrix4x4.identity;
 
@@ -153,5 +150,87 @@ public class RaymarchController : SceneViewFilter
         corners.SetRow(3, BL);
 
         return corners;
+    }
+
+    void FillBuffer()
+    {
+        List<Operation> operations = new List<Operation>();
+        List<RaymarchShape> shapes = new List<RaymarchShape>();
+
+        /*foreach(Transform child in this.transform)
+        {
+            if (child.GetComponent<Operation>())
+            {
+                operations.Add(child.GetComponent<Operation>());
+            }
+        }
+
+        for(int i = 0; i < operations.Count; i++)
+        {
+            foreach(Transform child in operations[i].transform)
+            {
+                if(child.GetComponent<RaymarchShape>())
+                {
+                    shapes.Add(child.GetComponent<RaymarchShape>());
+                }
+            }
+
+            operations[i].childCount = shapes.Count;
+        }*/
+
+        operations.Add(Oper);
+        shapes.Add(r1);
+        shapes.Add(r2);
+
+        OperationInfo[] opInfo = new OperationInfo[operations.Count];
+
+        for (int i = 0; i < operations.Count; i ++)
+        {
+            Operation o = operations[i];
+
+            opInfo[i] = new OperationInfo()
+            {
+                operation = (int)o.operation,
+                childCount = o.childCount,
+            };            
+        }
+
+        ShapeInfo[] shapeInfo = new ShapeInfo[shapes.Count];
+
+        for (int i = 0; i < shapes.Count; i++)
+        {
+            RaymarchShape s = shapes[i];
+
+            shapeInfo[i] = new ShapeInfo()
+            {
+                position = s.transform.position,
+                shape = (int)s.shape,
+
+                sphereRadius = s.sphereRadius,
+
+                boxDimensions = s.boxDimensions,
+
+                roundBoxDimensions = s.roundBoxDimensions,
+                roundBoxFactor = s.roundBoxFactor,
+
+                torusInnerRadius = s.torusInnerRadius,
+                torusOuterRadius = s.torusOuterRadius,
+
+                coneHeight = s.coneHeight,
+                coneRatio = s.coneRatio
+            };
+        }        
+
+        ComputeBuffer opBuffer = new ComputeBuffer(opInfo.Length, OperationInfo.GetSize());
+        ComputeBuffer shapeBuffer = new ComputeBuffer(shapeInfo.Length, ShapeInfo.GetSize());
+
+        opBuffer.SetData(opInfo);
+        shapeBuffer.SetData(shapeInfo);
+
+        Material.SetBuffer("operations", opBuffer);
+        Material.SetBuffer("shapes", shapeBuffer);
+
+        disposeBuffers.Add(opBuffer);
+        disposeBuffers.Add(shapeBuffer);
     }
 }

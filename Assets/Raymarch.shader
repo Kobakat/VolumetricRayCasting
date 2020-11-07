@@ -7,7 +7,7 @@
     SubShader
     {
         // No culling or depth
-        Cull Off ZWrite Off ZTest Always
+        Cull Off ZWrite On ZTest Always
 
         Pass
         {
@@ -27,31 +27,29 @@
 
             struct shape 
             {
-                int _Shape;
-                float3 _Position;
+                int shape;
+                float3 position;
 
-                float _SphereRadius;
-                float _TorusInner;
-                float _TorusOuter;
-                float _BoxRoundness;
-                float _ConeHeight;
+                float sphereRadius;
+                float torusInnerRadius;
+                float torusOuterRadius;
+                float boxRoundness;
+                float coneHeight;
 
-                float2 _ConeRatio;
-                float3 _Box;
-                float3 _RoundBox;
+                float2 coneRatio;
+                float3 boxDimensions;
+                float3 roundBoxDimensions;
             };
             
             struct operation 
             {
-                int _Operation;
-                int _ChildCount;
-                
-                StructuredBuffer<shape> shapes;
+                int operation;
+                int childCount;              
             };
 
             StructuredBuffer<operation> operations;
-
-            
+			
+			StructuredBuffer<shape> shapes;
 
             //How many times each ray is marched
             //Higher values give higher resolution (and potentially longer draw distances) but lower performance
@@ -91,30 +89,56 @@
             //For now it will just draw the distance from a sphere
             float SurfaceDistance(float3 p)
             {
-                p -= _Position;
+				operation o = operations[0];
 
-                switch (_Shape) 
-                {
-                    case 0:
-                        return sdSphere(p, _SphereRadius);
-                        break;
+				float dst[] = new float[2];
+				
 
-                    case 1:
-                        return sdBox(p, _Box);
-                        break;
+				for (int i = 0; i < 2; i++) 
+				{
+					shape s = shapes[i];
+					float pos = p;
 
-                    case 2:
-                        return sdTorus(p, _TorusOuter, _TorusInner);
-                        break;
+					pos -= s.position;
 
-                    case 3:
-                        return sdCone(p, _ConeRatio, _ConeHeight);
-                        break;
+					switch (s.shape)
+					{
+						case 0:
+							dst[i] = sdSphere(pos, s.sphereRadius);
+							break;
 
-                    case 4:
-                        return sdRoundBox(p, _RoundBox, _BoxRoundness);
-                        break;
-                }
+						case 1:
+							dst[i] = sdBox(pos, s.boxDimensions);
+							break;
+
+						case 2:
+							dst[i] = sdTorus(pos, s.torusOuterRadius, s.torusInnerRadius);
+							break;
+
+						case 3:
+							dst[i] = sdCone(pos, s.coneRatio, s.coneHeight);
+							break;
+
+						case 4:
+							dst[i] = sdRoundBox(pos, s.roundBoxDimensions, s.roundBoxFactor);
+							break;
+					}
+				}            
+				switch (o.operation) 
+				{
+					case 0:
+						return OpAdd(d[0], d[1]);
+						break;
+					case 1:
+						return OpSubtract(d[0], d[1]);
+						break;
+					case 2:
+						return OpIntersect(d[0], d[1]);
+						break;
+					case 3:
+						return OpBlend(d[0], d[1], 1);
+						break;
+				}
 
                 return 0;
             }
