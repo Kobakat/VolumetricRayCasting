@@ -217,7 +217,7 @@ public class RaymarchController : SceneViewFilter
                 torusOuterRadius = s.torusOuterRadius,
 
                 coneHeight = s.coneHeight,
-                coneRatio = s.coneRatio
+                coneRatio = s.coneRatio,
             };
         }        
 

@@ -14,6 +14,7 @@
             CGPROGRAM
             #pragma vertex vert
             #pragma fragment frag
+            #pragma target 4.0
 
             #include "UnityCG.cginc"
             #include "SDFunc.cginc"
@@ -33,12 +34,14 @@
                 float sphereRadius;
                 float torusInnerRadius;
                 float torusOuterRadius;
-                float boxRoundness;
+				float roundBoxFactor;
                 float coneHeight;
 
                 float2 coneRatio;
                 float3 boxDimensions;
                 float3 roundBoxDimensions;
+
+				float distance;
             };
             
             struct operation 
@@ -88,60 +91,15 @@
             //This function will later be adjusted to handle more shapes & different kinds
             //For now it will just draw the distance from a sphere
             float SurfaceDistance(float3 p)
-            {
-				operation o = operations[0];
+            {	
+                shape s = shapes[0];
+                shape s2 = shapes[1];
 
-				float dst[] = new float[2];
-				
+                p -= s.position;
 
-				for (int i = 0; i < 2; i++) 
-				{
-					shape s = shapes[i];
-					float pos = p;
-
-					pos -= s.position;
-
-					switch (s.shape)
-					{
-						case 0:
-							dst[i] = sdSphere(pos, s.sphereRadius);
-							break;
-
-						case 1:
-							dst[i] = sdBox(pos, s.boxDimensions);
-							break;
-
-						case 2:
-							dst[i] = sdTorus(pos, s.torusOuterRadius, s.torusInnerRadius);
-							break;
-
-						case 3:
-							dst[i] = sdCone(pos, s.coneRatio, s.coneHeight);
-							break;
-
-						case 4:
-							dst[i] = sdRoundBox(pos, s.roundBoxDimensions, s.roundBoxFactor);
-							break;
-					}
-				}            
-				switch (o.operation) 
-				{
-					case 0:
-						return OpAdd(d[0], d[1]);
-						break;
-					case 1:
-						return OpSubtract(d[0], d[1]);
-						break;
-					case 2:
-						return OpIntersect(d[0], d[1]);
-						break;
-					case 3:
-						return OpBlend(d[0], d[1], 1);
-						break;
-				}
-
-                return 0;
+                return sdSphere(p, s.sphereRadius);
             }
+
 
             //For a signed distances field, the normal of any given point is defined as the gradient of the distance field
             //As such, subtracting the distance field of a slight smaller value by a slight large value produces a good approximation

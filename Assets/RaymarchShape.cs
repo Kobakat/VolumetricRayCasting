@@ -34,7 +34,6 @@ public class RaymarchShape : MonoBehaviour
 
     public float coneHeight;
     public Vector2 coneRatio;
-    
 }
 
 /// IMPORTANT!
@@ -59,8 +58,6 @@ public struct ShapeInfo
 
     public float coneHeight;
     public Vector2 coneRatio;
-
-
     public static int GetSize()
     {
         return sizeof(float) * 15 + sizeof(int) * 2;
