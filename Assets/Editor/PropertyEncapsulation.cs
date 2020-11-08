@@ -59,7 +59,7 @@ public class PropertyEncapsulation : Editor
                 break;
 
             case RaymarchShape.Shape.Cone:
-                EditorGUILayout.PropertyField(coneRatio_Prop, new GUIContent("WhatDoesThisDo"));
+                EditorGUILayout.PropertyField(coneRatio_Prop, new GUIContent("Ratio"));
                 EditorGUILayout.PropertyField(coneHeight_Prop, new GUIContent("Height"));
                 break;
 

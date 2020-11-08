@@ -206,65 +206,13 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 51584994}
-  m_LocalRotation: {x: 0.2588191, y: 0, z: 0, w: 0.9659258}
+  m_LocalRotation: {x: 0.23456976, y: -0.40821788, z: 0.10938167, w: 0.8754261}
   m_LocalPosition: {x: 0, y: 14.16, z: 8.17}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 0
-  m_LocalEulerAnglesHint: {x: 30, y: 0, z: 0}
---- !u!1 &387656004
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 387656005}
-  - component: {fileID: 387656006}
-  m_Layer: 0
-  m_Name: Shape
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &387656005
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 387656004}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_Children: []
-  m_Father: {fileID: 918638552}
-  m_RootOrder: 1
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &387656006
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 387656004}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 270c35db3a39bc54f98d77fd57e0504a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  shape: 0
-  sphereRadius: 1
-  boxDimensions: {x: 1, y: 1, z: 1}
-  roundBoxDimensions: {x: 1, y: 1, z: 1}
-  roundBoxFactor: 1
-  torusOuterRadius: 1
-  torusInnerRadius: 1
-  coneHeight: 1
-  coneRatio: {x: 1, y: 1}
+  m_LocalEulerAnglesHint: {x: 30, y: -50, z: 0}
 --- !u!1 &757745595
 GameObject:
   m_ObjectHideFlags: 0
@@ -311,11 +259,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9d77fb8817e2b834a8c45ca7091a334d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _MainColor: {r: 0, g: 0.8591552, b: 1, a: 0}
+  _MainColor: {r: 0.055702902, g: 0.6792453, b: 0, a: 0}
   _Shader: {fileID: 4800000, guid: 5967145177e83e04bbb248b5dcdbf1f3, type: 3}
   Oper: {fileID: 918638553}
   r1: {fileID: 2117172839}
-  r2: {fileID: 387656006}
+  r2: {fileID: 1641131702}
 --- !u!81 &757745598
 AudioListener:
   m_ObjectHideFlags: 0
@@ -392,11 +340,11 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 918638551}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 3}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 2117172838}
-  - {fileID: 387656005}
+  - {fileID: 1641131703}
   m_Father: {fileID: 757745596}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -414,6 +362,59 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   operation: 0
   childCount: 2
+  blendStrength: 1
+--- !u!1 &1641131701
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1641131703}
+  - component: {fileID: 1641131702}
+  m_Layer: 0
+  m_Name: Shape
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1641131702
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1641131701}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 270c35db3a39bc54f98d77fd57e0504a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  shape: 0
+  sphereRadius: 1
+  boxDimensions: {x: 1, y: 1, z: 1}
+  roundBoxDimensions: {x: 1, y: 1, z: 1}
+  roundBoxFactor: 0.25
+  torusOuterRadius: 1
+  torusInnerRadius: 0.5
+  coneHeight: 1
+  coneRatio: {x: 1, y: 1}
+--- !u!4 &1641131703
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1641131701}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 1, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 918638552}
+  m_RootOrder: 1
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2117172837
 GameObject:
   m_ObjectHideFlags: 0
@@ -438,8 +439,8 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2117172837}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.12, y: 0.06, z: 0.19}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: -1, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 918638552}
@@ -461,8 +462,8 @@ MonoBehaviour:
   sphereRadius: 1
   boxDimensions: {x: 1, y: 1, z: 1}
   roundBoxDimensions: {x: 1, y: 1, z: 1}
-  roundBoxFactor: 1
+  roundBoxFactor: 0.25
   torusOuterRadius: 1
-  torusInnerRadius: 1
+  torusInnerRadius: 0.5
   coneHeight: 1
   coneRatio: {x: 1, y: 1}

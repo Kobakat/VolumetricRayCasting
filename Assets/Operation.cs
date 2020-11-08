@@ -14,6 +14,8 @@ public class Operation : MonoBehaviour
 
     public OpFunction operation;
     public int childCount;
+
+    public float blendStrength;
 }
 
 public struct OperationInfo
@@ -21,8 +23,10 @@ public struct OperationInfo
     public int operation;
     public int childCount;
 
+    public float blendStrength;
+
     public static int GetSize()
     {
-        return sizeof(int) * 2;
+        return sizeof(int) * 2 + sizeof(float) * 1;
     }
 }

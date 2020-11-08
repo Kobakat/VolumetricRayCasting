@@ -192,6 +192,7 @@ public class RaymarchController : SceneViewFilter
             {
                 operation = (int)o.operation,
                 childCount = o.childCount,
+                blendStrength = o.blendStrength
             };            
         }
 
@@ -232,5 +233,7 @@ public class RaymarchController : SceneViewFilter
 
         disposeBuffers.Add(opBuffer);
         disposeBuffers.Add(shapeBuffer);
+
+        
     }
 }

@@ -62,7 +62,7 @@ float opAdd(float d1, float d2)
 
 float opSubtract(float d1, float d2) 
 {
-	return min(-d1, d2);
+	return max(-d1, d2);
 }
 
 float opIntersect(float d1, float d2) 
