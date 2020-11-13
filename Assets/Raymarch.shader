@@ -25,6 +25,8 @@
             uniform float4x4 _Frustum;
             uniform float4x4 _CamMatrix;            
             uniform float3 _Light;
+            uniform int operationCount;
+           
 
             struct shape 
             {
@@ -43,6 +45,8 @@
 				
                 float coneHeight;
                 float2 coneRatio;
+
+                int index;
             };
             
             struct operation 
@@ -52,6 +56,8 @@
 
                 float blendStrength;
             };
+            
+            
 
             StructuredBuffer<operation> operations;
 			
@@ -121,29 +127,34 @@
             //For now it will just draw the distance from a sphere
             float SurfaceDistance(float3 p)
             {	
-                operation o = operations[0];
-             
-                switch (o.operation) 
+                for (int i = 0; i < operationCount; i++) 
                 {
-                    case 0:
-                        return opAdd(Test(0, p), Test(1, p));
-                        break;
-                    case 1:
-                        return opSubtract(Test(0, p), Test(1, p));
-                        break;
-                    case 2:
-                        return opIntersect(Test(0, p), Test(1, p));
-                        break;
-                    case 3:
-                        return opBlend(Test(0, p), Test(1, p), o.blendStrength);
-                        break;
-                }
+                    operation o = operations[i];
 
-                return 0;
+                    for (int j = 0; j < childCount; j++) 
+                    {
+                        switch (o.operation)
+                        {
+                            case 0:
+                                return opAdd(Test(0, p), Test(1, p));
+                                break;
+                            case 1:
+                                return opSubtract(Test(0, p), Test(1, p));
+                                break;
+                            case 2:
+                                return opIntersect(Test(0, p), Test(1, p));
+                                break;
+                            case 3:
+                                return opBlend(Test(0, p), Test(1, p), o.blendStrength);
+                                break;
+                        }
+                    }
+                    
+                }                                                     
+                return 1;
             }
 
-            
-
+           
             //For a signed distances field, the normal of any given point is defined as the gradient of the distance field
             //As such, subtracting the distance field of a slight smaller value by a slight large value produces a good approximation
             //This function is exceptionally expensive as it requires 6 more calls of a sign distance function PER PIXEL hit

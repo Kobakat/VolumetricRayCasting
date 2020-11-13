@@ -15,13 +15,10 @@ public class RaymarchController : SceneViewFilter
     Transform _light;
 
     List<ComputeBuffer> disposeBuffers;
+    List<Operation> operations;
+    List<RaymarchShape> shapes;
 
-    public Operation Oper;
-    public RaymarchShape r1;
-    public RaymarchShape r2;
-
-
-
+    int operationCount;
     public Material Material
     {
         get
@@ -115,6 +112,7 @@ public class RaymarchController : SceneViewFilter
         Material.SetMatrix("_CamMatrix", Cam.cameraToWorldMatrix);
         Material.SetColor("_MainColor", _MainColor);
         Material.SetVector("_Light", Light ? Light.forward : Vector3.down);
+        Material.SetInt("operationCount", operationCount);
 
         FillBuffer();
 
@@ -154,33 +152,23 @@ public class RaymarchController : SceneViewFilter
 
     void FillBuffer()
     {
-        List<Operation> operations = new List<Operation>();
-        List<RaymarchShape> shapes = new List<RaymarchShape>();
+        //operations = new List<Operation>();
+        //shapes = new List<RaymarchShape>();
 
-        /*foreach(Transform child in this.transform)
-        {
-            if (child.GetComponent<Operation>())
-            {
-                operations.Add(child.GetComponent<Operation>());
-            }
-        }
+        operations = new List<Operation>(FindObjectsOfType<Operation>());
+        shapes = new List<RaymarchShape>(FindObjectsOfType<RaymarchShape>());
+
+        operationCount = operations.Count;
 
         for(int i = 0; i < operations.Count; i++)
         {
-            foreach(Transform child in operations[i].transform)
-            {
-                if(child.GetComponent<RaymarchShape>())
-                {
-                    shapes.Add(child.GetComponent<RaymarchShape>());
-                }
-            }
-
             operations[i].childCount = shapes.Count;
-        }*/
-
-        operations.Add(Oper);
-        shapes.Add(r1);
-        shapes.Add(r2);
+            
+            for(int j = 0; j < operations[i].childCount; j++)
+            {
+                shapes[j].index = i;
+            }
+        }
 
         OperationInfo[] opInfo = new OperationInfo[operations.Count];
 
@@ -219,6 +207,8 @@ public class RaymarchController : SceneViewFilter
 
                 coneHeight = s.coneHeight,
                 coneRatio = s.coneRatio,
+
+                index = s.index
             };
         }        
 
@@ -236,4 +226,5 @@ public class RaymarchController : SceneViewFilter
 
         
     }
+
 }
