@@ -96,7 +96,7 @@
                 float depth;
             };
 
-            float Test(int index, float3 p)
+            float GetShapeValue(float3 p, int index)
             {
                 shape s = shapes[index];
 
@@ -120,41 +120,47 @@
                         break;
                 }
 
-                return 0;
+                return 1;
+            }
+
+            float GetOperationValue(float3 p, int index) 
+            {
+                operation o = operations[index];
+
+                int val = 2 * index;
+                switch (o.operation)
+                {
+                    case 0:
+                        return opAdd(GetShapeValue(p, val), GetShapeValue(p, val + 1));
+                        break;
+                    case 1:
+                        return opSubtract(GetShapeValue(p, val), GetShapeValue(p, val + 1));
+                        break;
+                    case 2:
+                        return opIntersect(GetShapeValue(p, val), GetShapeValue(p, val + 1));
+                        break;
+                    case 3:
+                        return opBlend(GetShapeValue(p, val), GetShapeValue(p, val + 1), o.blendStrength);
+                        break;
+                }
+                
+                return 1;
             }
 
             //This function will later be adjusted to handle more shapes & different kinds
             //For now it will just draw the distance from a sphere
             float SurfaceDistance(float3 p)
             {	
+                float surfDst;
+
                 for (int i = 0; i < operationCount; i++) 
                 {
-                    operation o = operations[i];
-
-                    for (int j = 0; j < childCount; j++) 
-                    {
-                        switch (o.operation)
-                        {
-                            case 0:
-                                return opAdd(Test(0, p), Test(1, p));
-                                break;
-                            case 1:
-                                return opSubtract(Test(0, p), Test(1, p));
-                                break;
-                            case 2:
-                                return opIntersect(Test(0, p), Test(1, p));
-                                break;
-                            case 3:
-                                return opBlend(Test(0, p), Test(1, p), o.blendStrength);
-                                break;
-                        }
-                    }
-                    
-                }                                                     
-                return 1;
+                    surfDst = opAdd(GetOperationValue(p, i), GetOperationValue(p, i + 1));
+                }
+                
+                return surfDst;
             }
-
-           
+    
             //For a signed distances field, the normal of any given point is defined as the gradient of the distance field
             //As such, subtracting the distance field of a slight smaller value by a slight large value produces a good approximation
             //This function is exceptionally expensive as it requires 6 more calls of a sign distance function PER PIXEL hit
