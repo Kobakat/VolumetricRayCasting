@@ -112,9 +112,10 @@ public class RaymarchController : SceneViewFilter
         Material.SetMatrix("_CamMatrix", Cam.cameraToWorldMatrix);
         Material.SetColor("_MainColor", _MainColor);
         Material.SetVector("_Light", Light ? Light.forward : Vector3.down);
-        Material.SetInt("operationCount", operationCount);
-
+        
         FillBuffer();
+
+        Material.SetInt("operationCount", operationCount);
 
         Blit(source, destination, Material, 0);
 
@@ -159,6 +160,7 @@ public class RaymarchController : SceneViewFilter
         shapes = new List<RaymarchShape>(FindObjectsOfType<RaymarchShape>());
 
         operationCount = operations.Count;
+     
 
         for(int i = 0; i < operations.Count; i++)
         {
@@ -224,7 +226,8 @@ public class RaymarchController : SceneViewFilter
         disposeBuffers.Add(opBuffer);
         disposeBuffers.Add(shapeBuffer);
 
-        
+        operations.Clear();
+        shapes.Clear();
     }
 
 }

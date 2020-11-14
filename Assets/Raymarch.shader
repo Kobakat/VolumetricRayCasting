@@ -120,7 +120,7 @@
                         break;
                 }
 
-                return 1;
+                return 0;
             }
 
             float GetOperationValue(float3 p, int index) 
@@ -144,21 +144,33 @@
                         break;
                 }
                 
-                return 1;
+                return 0;
             }
 
             //This function will later be adjusted to handle more shapes & different kinds
             //For now it will just draw the distance from a sphere
             float SurfaceDistance(float3 p)
             {	
-                float surfDst;
-
-                for (int i = 0; i < operationCount; i++) 
+                switch (operationCount) 
                 {
-                    surfDst = opAdd(GetOperationValue(p, i), GetOperationValue(p, i + 1));
-                }
-                
-                return surfDst;
+                    case 0:
+                        return GetOperationValue(p, 0);
+                        break;
+                    case 1:
+                        return opAdd(GetOperationValue(p, 0), GetOperationValue(p, 1));
+                        break;
+                    case 2:
+                        float surfDst;
+
+                        surfDst = opAdd(GetOperationValue(p, 0), GetOperationValue(p, 1));
+                        for (int i = 2; i < operationCount; i++) 
+                        {
+                            surfDst = opAdd(surfDst, GetOperationValue(p, i));
+                        }
+                        return surfDst;
+                        break;
+                }               
+                return 0;
             }
     
             //For a signed distances field, the normal of any given point is defined as the gradient of the distance field
