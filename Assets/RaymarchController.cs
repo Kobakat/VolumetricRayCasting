@@ -112,10 +112,9 @@ public class RaymarchController : SceneViewFilter
         Material.SetMatrix("_CamMatrix", Cam.cameraToWorldMatrix);
         Material.SetColor("_MainColor", _MainColor);
         Material.SetVector("_Light", Light ? Light.forward : Vector3.down);
-        
-        FillBuffer();
+        Material.SetInt("_OperationCount", operationCount);
 
-        Material.SetInt("operationCount", operationCount);
+        FillBuffer();
 
         Blit(source, destination, Material, 0);
 

@@ -2,9 +2,9 @@
 {
     Properties
     {
-        _MainTex ("Texture", 2D) = "white" {}
+        _MainTex("Texture", 2D) = "white" {}
     }
-    SubShader
+        SubShader
     {
         // No culling or depth
         Cull Off ZWrite On ZTest Always
@@ -23,16 +23,16 @@
             sampler2D _MainTex;
             uniform fixed4 _MainColor;
             uniform float4x4 _Frustum;
-            uniform float4x4 _CamMatrix;            
+            uniform float4x4 _CamMatrix;
             uniform float3 _Light;
-            uniform int operationCount;
-           
+            uniform int _OperationCount;
 
-            struct shape 
+
+            struct shape
             {
                 float3 position;
                 int shape;
-                
+
                 float sphereRadius;
 
                 float3 boxDimensions;
@@ -42,35 +42,35 @@
 
                 float torusInnerRadius;
                 float torusOuterRadius;
-				
+
                 float coneHeight;
                 float2 coneRatio;
 
                 int index;
             };
-            
-            struct operation 
+
+            struct operation
             {
                 int operation;
                 int childCount;
 
                 float blendStrength;
             };
-            
-            
+
+
 
             StructuredBuffer<operation> operations;
-			
-			StructuredBuffer<shape> shapes;
+
+            StructuredBuffer<shape> shapes;
 
             //How many times each ray is marched
             //Higher values give higher resolution (and potentially longer draw distances) but lower performance
             static const int maxSteps = 100;
-            
+
             //How close does a ray have to get to be consider a hit
             //Higher values give a sharper definition of shape but lower performance
             static const float epsilon = 0.01;
-         
+
             //The maximum distance we want a ray to be from the nearest surface before giving up
             //Higher values give a longer draw distance but lower performance
             static const float maxDist = 100;
@@ -120,10 +120,10 @@
                         break;
                 }
 
-                return 0;
+                return 1;
             }
 
-            float GetOperationValue(float3 p, int index) 
+            float GetOperationValue(float3 p, int index)
             {
                 operation o = operations[index];
 
@@ -143,42 +143,53 @@
                         return opBlend(GetShapeValue(p, val), GetShapeValue(p, val + 1), o.blendStrength);
                         break;
                 }
-                
-                return 0;
+
+                return 1;
             }
 
+            
             //This function will later be adjusted to handle more shapes & different kinds
             //For now it will just draw the distance from a sphere
             float SurfaceDistance(float3 p)
-            {	
-                switch (operationCount) 
+            {
+                /*if (op == 1) 
                 {
-                    case 0:
-                        return GetOperationValue(p, 0);
-                        break;
-                    case 1:
-                        return opAdd(GetOperationValue(p, 0), GetOperationValue(p, 1));
-                        break;
-                    case 2:
-                        float surfDst;
+                    value = GetOperationValue(p, 0);
+                }
+                    
+                if (op == 2) 
+                {
+                    value = opAdd(GetOperationValue(p, 0), GetOperationValue(p, 1));
+                }
+                    
+                if (op >= 3) 
+                {
+                    float surfDst;
 
-                        surfDst = opAdd(GetOperationValue(p, 0), GetOperationValue(p, 1));
-                        for (int i = 2; i < operationCount; i++) 
-                        {
-                            surfDst = opAdd(surfDst, GetOperationValue(p, i));
-                        }
-                        return surfDst;
-                        break;
-                }               
-                return 0;
+                    surfDst = opAdd(GetOperationValue(p, 0), GetOperationValue(p, 1));
+                    for (int i = 2; i < op; i++)
+                    {
+                        surfDst = opAdd(surfDst, GetOperationValue(p, i));
+                    }
+                    value = surfDst;
+                }*/
+
+                float surfDst = GetOperationValue(p, 0);
+             
+                for (int i = 1; i < _OperationCount; i++)
+                {                 
+                    surfDst = opAdd(surfDst, GetOperationValue(p, i));
+                }
+                    
+                return surfDst;
             }
-    
+
             //For a signed distances field, the normal of any given point is defined as the gradient of the distance field
             //As such, subtracting the distance field of a slight smaller value by a slight large value produces a good approximation
             //This function is exceptionally expensive as it requires 6 more calls of a sign distance function PER PIXEL hit
             float3 CalculateNormal(float3 p)
             {
-                                      
+
                 float x = SurfaceDistance(float3(p.x + epsilon, p.y, p.z)) - SurfaceDistance(float3(p.x - epsilon, p.y, p.z));
                 float y = SurfaceDistance(float3(p.x, p.y + epsilon, p.z)) - SurfaceDistance(float3(p.x, p.y - epsilon, p.z));
                 float z = SurfaceDistance(float3(p.x, p.y, p.z + epsilon)) - SurfaceDistance(float3(p.x, p.y, p.z - epsilon));
@@ -187,18 +198,18 @@
             }
 
             //For each pixel on the screen
-            fixed4 raymarch(ray r) 
+            fixed4 raymarch(ray r)
             {
                 //Start with a completely transparent pixel
                 fixed4 pixelColor = fixed4(0, 0, 0, 0);
                 //Cast out a ray at the pixel's UV coordinate
                 float dst = 0;
-                         
+
                 //For a maximum of <maxStep> times,
-                for (int i = 0; i < maxSteps; i++) 
+                for (int i = 0; i < maxSteps; i++)
                 {
                     //Determine the distance from the nearest shape in the scene
-                    r.position = r.origin + r.direction * dst;                  
+                    r.position = r.origin + r.direction * dst;
                     float surfDist = SurfaceDistance(r.position);
 
                     //If the distance is sufficently small...
@@ -206,11 +217,11 @@
                     {
                         //We "hit" the surface. Calculate the normal vector of the pixel and shade it based on the angle from the rays of light
                         float3 n = CalculateNormal(r.position);
-                        
+
                         //This uses the lambertian model of lighting https://en.wikipedia.org/wiki/Lambertian_reflectance
                         float light = dot(-_Light.xyz, n).rrr;
 
-                        
+
                         //Set the color of the pixel
                         //TODO replace alpha channel with a variable for transparency
                         pixelColor = fixed4(_MainColor.rgb * light, 1);
@@ -220,8 +231,8 @@
                     //If the distance is not sufficently small, we missed.
                     //Move the ray's position forward and try again
                     dst += surfDist;
-                    
-                    
+
+
                     //If the distance is very large or a mesh is in the way
                     //we give up and break early
 
@@ -232,7 +243,7 @@
                 //Give the frag function the color we want the pixel to be
                 return pixelColor;
 
-            }        
+            }
 
             v2f vert(appdata v)
             {
@@ -261,10 +272,10 @@
             fixed4 frag(v2f i) : SV_Target
             {
                 ray r;
-                
+
                 //https://docs.unity3d.com/Manual/SL-UnityShaderVariables.html
                 r.direction = normalize(i.ray.xyz);
-                r.origin = _WorldSpaceCameraPos;                          
+                r.origin = _WorldSpaceCameraPos;
 
                 r.depth = LinearEyeDepth(tex2D(_CameraDepthTexture, i.uv).r);
                 r.depth *= length(i.ray.xyz);
@@ -275,11 +286,14 @@
 
                 //The color of the pixel after the raymarch function
                 fixed4 col = raymarch(r);
-                
+
                 //Alpha blending function, derived via https://en.wikipedia.org/wiki/Alpha_compositing#Alpha_blending
                 return fixed4(base * (1.0 - col.w) + col.xyz * col.w, 1.0);
             }
-            ENDCG
-        }
+        
+        ENDCG
     }
+    
+}
+
 }
