@@ -127,53 +127,45 @@
             {
                 operation o = operations[index];
 
-                int val = 2 * index;
-                switch (o.operation)
-                {
-                    case 0:
-                        return opAdd(GetShapeValue(p, val), GetShapeValue(p, val + 1));
-                        break;
-                    case 1:
-                        return opSubtract(GetShapeValue(p, val), GetShapeValue(p, val + 1));
-                        break;
-                    case 2:
-                        return opIntersect(GetShapeValue(p, val), GetShapeValue(p, val + 1));
-                        break;
-                    case 3:
-                        return opBlend(GetShapeValue(p, val), GetShapeValue(p, val + 1), o.blendStrength);
-                        break;
-                }
+                int startIndex = 0;
 
-                return 1;
+                if (index != 0) 
+                {
+                    
+                    for (int i = 0; i < index; i++)
+                    {
+                        startIndex += operations[i].childCount;
+                    }
+                }
+                             
+                float shapeDst = GetShapeValue(p, startIndex);
+
+                for (int j = 1; j < o.childCount; j++) 
+                {
+                    switch (o.operation)
+                    {
+                        case 0:
+                            shapeDst = opAdd(shapeDst, GetShapeValue(p, startIndex + j));
+                            break;
+                        case 1:
+                            shapeDst = opSubtract(shapeDst, GetShapeValue(p, startIndex + j));
+                            break;
+                        case 2:
+                            shapeDst = opIntersect(shapeDst, GetShapeValue(p, startIndex + j));
+                            break;
+                        case 3:
+                            shapeDst = opBlend(shapeDst, GetShapeValue(p, startIndex + j), o.blendStrength);
+                            break;
+                    }
+                }
+                
+
+                return shapeDst;
             }
 
             
-            //This function will later be adjusted to handle more shapes & different kinds
-            //For now it will just draw the distance from a sphere
             float SurfaceDistance(float3 p)
             {
-                /*if (op == 1) 
-                {
-                    value = GetOperationValue(p, 0);
-                }
-                    
-                if (op == 2) 
-                {
-                    value = opAdd(GetOperationValue(p, 0), GetOperationValue(p, 1));
-                }
-                    
-                if (op >= 3) 
-                {
-                    float surfDst;
-
-                    surfDst = opAdd(GetOperationValue(p, 0), GetOperationValue(p, 1));
-                    for (int i = 2; i < op; i++)
-                    {
-                        surfDst = opAdd(surfDst, GetOperationValue(p, i));
-                    }
-                    value = surfDst;
-                }*/
-
                 float surfDst = GetOperationValue(p, 0);
              
                 for (int i = 1; i < _OperationCount; i++)

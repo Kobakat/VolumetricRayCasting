@@ -15,8 +15,8 @@ public class RaymarchController : SceneViewFilter
     Transform _light;
 
     List<ComputeBuffer> disposeBuffers;
-    List<Operation> operations;
-    List<RaymarchShape> shapes;
+    //List<Operation> operations;
+    //List<RaymarchShape> shapes;
 
     int operationCount;
     public Material Material
@@ -155,8 +155,8 @@ public class RaymarchController : SceneViewFilter
         //operations = new List<Operation>();
         //shapes = new List<RaymarchShape>();
 
-        operations = new List<Operation>(FindObjectsOfType<Operation>());
-        shapes = new List<RaymarchShape>(FindObjectsOfType<RaymarchShape>());
+        List<Operation> operations = new List<Operation>(FindObjectsOfType<Operation>());
+        List<RaymarchShape> shapes = new List<RaymarchShape>(FindObjectsOfType<RaymarchShape>());
 
         operationCount = operations.Count;
      
@@ -225,8 +225,8 @@ public class RaymarchController : SceneViewFilter
         disposeBuffers.Add(opBuffer);
         disposeBuffers.Add(shapeBuffer);
 
-        operations.Clear();
-        shapes.Clear();
+        //operations.Clear();
+        //shapes.Clear();
     }
 
 }
