@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEditor;
 using System.Collections.Generic;
 
 [ExecuteInEditMode]
@@ -15,8 +16,8 @@ public class RaymarchController : SceneViewFilter
     Transform _light;
 
     List<ComputeBuffer> disposeBuffers;
-    //List<Operation> operations;
-    //List<RaymarchShape> shapes;
+    List<Operation> operations;
+    List<RaymarchShape> shapes;
 
     int operationCount;
     public Material Material
@@ -35,8 +36,8 @@ public class RaymarchController : SceneViewFilter
         {
             if (!_cam)
                 _cam = GetComponent<Camera>();
+            
             //Sometimes unity cameras don't render depth texture by default?
-            //I spent a good hour and a half figuring that out...
             _cam.depthTextureMode = DepthTextureMode.Depth;
             return _cam;
         }
@@ -63,6 +64,7 @@ public class RaymarchController : SceneViewFilter
             return _light;
         }
     }
+
 
     static void Blit(RenderTexture source, RenderTexture destination, Material mat, int pass)
     {
@@ -124,6 +126,7 @@ public class RaymarchController : SceneViewFilter
         }
     }
 
+    
     //Returns a matrix containing the corner positions of the camera's view frustum
     Matrix4x4 GetFrustum(Camera cam)
     {
@@ -152,23 +155,15 @@ public class RaymarchController : SceneViewFilter
 
     void FillBuffer()
     {
-        //operations = new List<Operation>();
-        //shapes = new List<RaymarchShape>();
-
-        List<Operation> operations = new List<Operation>(FindObjectsOfType<Operation>());
-        List<RaymarchShape> shapes = new List<RaymarchShape>(FindObjectsOfType<RaymarchShape>());
+        operations = new List<Operation>(FindObjectsOfType<Operation>());
 
         operationCount = operations.Count;
-     
 
-        for(int i = 0; i < operations.Count; i++)
+        shapes = new List<RaymarchShape>(FindObjectsOfType<RaymarchShape>());
+        
+        for (int i = 0; i < operations.Count; i++)
         {
-            operations[i].childCount = shapes.Count;
-            
-            for(int j = 0; j < operations[i].childCount; j++)
-            {
-                shapes[j].index = i;
-            }
+            operations[i].childCount = operations[i].transform.childCount;
         }
 
         OperationInfo[] opInfo = new OperationInfo[operations.Count];
@@ -208,8 +203,6 @@ public class RaymarchController : SceneViewFilter
 
                 coneHeight = s.coneHeight,
                 coneRatio = s.coneRatio,
-
-                index = s.index
             };
         }        
 
@@ -225,8 +218,8 @@ public class RaymarchController : SceneViewFilter
         disposeBuffers.Add(opBuffer);
         disposeBuffers.Add(shapeBuffer);
 
-        //operations.Clear();
-        //shapes.Clear();
+        operations.Clear();
+        shapes.Clear();    
     }
 
 }

@@ -45,8 +45,6 @@
 
                 float coneHeight;
                 float2 coneRatio;
-
-                int index;
             };
 
             struct operation
@@ -129,14 +127,12 @@
 
                 int startIndex = 0;
 
-                if (index != 0) 
+             
+                for (int i = 0; i < index; i++)
                 {
-                    
-                    for (int i = 0; i < index; i++)
-                    {
-                        startIndex += operations[i].childCount;
-                    }
+                    startIndex += operations[i].childCount;
                 }
+
                              
                 float shapeDst = GetShapeValue(p, startIndex);
 

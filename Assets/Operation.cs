@@ -1,7 +1,6 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
+[ExecuteInEditMode]
 public class Operation : MonoBehaviour
 {
     public enum OpFunction
@@ -16,6 +15,26 @@ public class Operation : MonoBehaviour
     public int childCount;
 
     public float blendStrength;
+
+    public bool lerpBlend;
+
+    public float minBlend, maxBlend, lerpSpeed;
+
+    void Update()
+    {
+        if (operation == OpFunction.Blend)
+            BlendUpdate();
+    }
+
+    void BlendUpdate()
+    {
+        if (minBlend < 0)
+            minBlend = 0;
+        if (maxBlend < minBlend)
+            maxBlend = minBlend;
+        if(lerpBlend)
+            blendStrength = Mathf.Lerp(minBlend, maxBlend, Mathf.Abs(Mathf.Sin(Time.time * lerpSpeed)));
+    }
 }
 
 public struct OperationInfo

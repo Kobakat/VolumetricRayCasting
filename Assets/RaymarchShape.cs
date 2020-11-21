@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.U2D;
 
+[ExecuteInEditMode]
 public class RaymarchShape : MonoBehaviour
 {
     public ShapeInfo shapeInfo;
@@ -34,8 +35,6 @@ public class RaymarchShape : MonoBehaviour
 
     public float coneHeight;
     public Vector2 coneRatio;
-
-    public int index;
 }
 
 /// IMPORTANT!
@@ -61,10 +60,8 @@ public struct ShapeInfo
     public float coneHeight;
     public Vector2 coneRatio;
 
-    public int index;
-
     public static int GetSize()
     {
-        return sizeof(float) * 16 + sizeof(int) * 2;
+        return sizeof(float) * 16 + sizeof(int);
     }
 }
