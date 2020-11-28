@@ -22,6 +22,7 @@ public class RaymarchShape : MonoBehaviour
     /// There properties are used for the inspector
     /// </summary>
     public Shape shape;
+    public Color color;
 
     public float sphereRadius;
 
@@ -46,6 +47,7 @@ public struct ShapeInfo
 {
     public Vector3 position;
     public int shape;
+    public Vector3 color;
 
     public float sphereRadius;
 
@@ -62,6 +64,6 @@ public struct ShapeInfo
 
     public static int GetSize()
     {
-        return sizeof(float) * 16 + sizeof(int);
+        return sizeof(float) * 19 + sizeof(int);
     }
 }

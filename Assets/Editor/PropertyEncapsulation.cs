@@ -7,6 +7,7 @@ public class PropertyEncapsulation : Editor
 
     public SerializedProperty 
         shape_Prop,
+        color_Prop,
         sphereRadius_Prop,
         boxDimensions_Prop,
         roundBoxDimensions_Prop,
@@ -20,6 +21,7 @@ public class PropertyEncapsulation : Editor
     void OnEnable()
     {
         this.shape_Prop = serializedObject.FindProperty("shape");
+        this.color_Prop = serializedObject.FindProperty("color");
 
         this.sphereRadius_Prop = serializedObject.FindProperty("sphereRadius");
 
@@ -40,6 +42,7 @@ public class PropertyEncapsulation : Editor
         serializedObject.Update();
 
         EditorGUILayout.PropertyField(shape_Prop);
+        EditorGUILayout.PropertyField(color_Prop);
 
         RaymarchShape.Shape st = (RaymarchShape.Shape)shape_Prop.enumValueIndex;
 

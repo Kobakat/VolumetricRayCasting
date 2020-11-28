@@ -190,6 +190,7 @@ public class RaymarchController : SceneViewFilter
             {
                 position = s.transform.position,
                 shape = (int)s.shape,
+                color = new Vector3(s.color.r, s.color.g, s.color.b),
 
                 sphereRadius = s.sphereRadius,
 

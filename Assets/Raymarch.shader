@@ -32,6 +32,7 @@
             {
                 float3 position;
                 int shape;
+                float3 color;
 
                 float sphereRadius;
 
@@ -94,34 +95,38 @@
                 float depth;
             };
 
-            float GetShapeValue(float3 p, int index)
+            float4 GetShape(float3 p, int index)
             {
                 shape s = shapes[index];
 
                 s.position = p - s.position;
+
+                float3 col = s.color;
+                float dst = 1;
+
                 switch (s.shape)
                 {
                     case 0:
-                        return sdSphere(s.position, s.sphereRadius);
+                        dst = sdSphere(s.position, s.sphereRadius);
                         break;
                     case 1:
-                        return sdBox(s.position, s.boxDimensions);
+                        dst = sdBox(s.position, s.boxDimensions);
                         break;
                     case 2:
-                        return sdTorus(s.position, s.torusInnerRadius, s.torusOuterRadius);
+                        dst = sdTorus(s.position, s.torusInnerRadius, s.torusOuterRadius);
                         break;
                     case 3:
-                        return sdCone(s.position, s.coneRatio, s.coneHeight);
+                        dst = sdCone(s.position, s.coneRatio, s.coneHeight);
                         break;
                     case 4:
-                        return sdRoundBox(s.position, s.roundBoxDimensions, s.roundBoxFactor);
+                        dst = sdRoundBox(s.position, s.roundBoxDimensions, s.roundBoxFactor);
                         break;
                 }
 
-                return 1;
+                return float4(col, dst);
             }
 
-            float GetOperationValue(float3 p, int index)
+            float4 GetOperation(float3 p, int index)
             {
                 operation o = operations[index];
 
@@ -132,44 +137,42 @@
                 {
                     startIndex += operations[i].childCount;
                 }
-
-                             
-                float shapeDst = GetShapeValue(p, startIndex);
+                          
+                float4 shapeValue = GetShape(p, startIndex);
 
                 for (int j = 1; j < o.childCount; j++) 
                 {
                     switch (o.operation)
                     {
                         case 0:
-                            shapeDst = opAdd(shapeDst, GetShapeValue(p, startIndex + j));
+                            shapeValue = opAdd(shapeValue, GetShape(p, startIndex + j));
                             break;
                         case 1:
-                            shapeDst = opSubtract(shapeDst, GetShapeValue(p, startIndex + j));
+                            shapeValue = opSubtract(shapeValue, GetShape(p, startIndex + j));
                             break;
                         case 2:
-                            shapeDst = opIntersect(shapeDst, GetShapeValue(p, startIndex + j));
+                            shapeValue = opIntersect(shapeValue, GetShape(p, startIndex + j));
                             break;
                         case 3:
-                            shapeDst = opBlend(shapeDst, GetShapeValue(p, startIndex + j), o.blendStrength);
+                            shapeValue = opBlend(shapeValue, GetShape(p, startIndex + j), o.blendStrength);
                             break;
                     }
                 }
                 
-
-                return shapeDst;
+                return shapeValue;
             }
 
             
-            float SurfaceDistance(float3 p)
+            float4 SurfaceDistance(float3 p)
             {
-                float surfDst = GetOperationValue(p, 0);
+                float4 surfValue = GetOperation(p, 0);
              
                 for (int i = 1; i < _OperationCount; i++)
                 {                 
-                    surfDst = opAdd(surfDst, GetOperationValue(p, i));
+                    surfValue = opAdd(surfValue, GetOperation(p, i));
                 }
                     
-                return surfDst;
+                return surfValue;
             }
 
             //For a signed distances field, the normal of any given point is defined as the gradient of the distance field
@@ -178,9 +181,9 @@
             float3 CalculateNormal(float3 p)
             {
 
-                float x = SurfaceDistance(float3(p.x + epsilon, p.y, p.z)) - SurfaceDistance(float3(p.x - epsilon, p.y, p.z));
-                float y = SurfaceDistance(float3(p.x, p.y + epsilon, p.z)) - SurfaceDistance(float3(p.x, p.y - epsilon, p.z));
-                float z = SurfaceDistance(float3(p.x, p.y, p.z + epsilon)) - SurfaceDistance(float3(p.x, p.y, p.z - epsilon));
+                float x = SurfaceDistance(float3(p.x + epsilon, p.y, p.z)).w - SurfaceDistance(float3(p.x - epsilon, p.y, p.z)).w;
+                float y = SurfaceDistance(float3(p.x, p.y + epsilon, p.z)).w - SurfaceDistance(float3(p.x, p.y - epsilon, p.z)).w;
+                float z = SurfaceDistance(float3(p.x, p.y, p.z + epsilon)).w - SurfaceDistance(float3(p.x, p.y, p.z - epsilon)).w;
 
                 return normalize(float3(x,y,z));
             }
@@ -198,27 +201,24 @@
                 {
                     //Determine the distance from the nearest shape in the scene
                     r.position = r.origin + r.direction * dst;
-                    float surfDist = SurfaceDistance(r.position);
+                    float4 surfDist = SurfaceDistance(r.position);
 
                     //If the distance is sufficently small...
-                    if (surfDist < epsilon)
+                    if (surfDist.w < epsilon)
                     {
                         //We "hit" the surface. Calculate the normal vector of the pixel and shade it based on the angle from the rays of light
                         float3 n = CalculateNormal(r.position);
 
                         //This uses the lambertian model of lighting https://en.wikipedia.org/wiki/Lambertian_reflectance
-                        float light = dot(-_Light.xyz, n).rrr;
+                        float light = dot(-_Light.xyz, n);
 
-
-                        //Set the color of the pixel
-                        //TODO replace alpha channel with a variable for transparency
-                        pixelColor = fixed4(_MainColor.rgb * light, 1);
+                        pixelColor = fixed4(surfDist.rgb * light, 1);
                         break;
                     }
 
                     //If the distance is not sufficently small, we missed.
                     //Move the ray's position forward and try again
-                    dst += surfDist;
+                    dst += surfDist.w;
 
 
                     //If the distance is very large or a mesh is in the way
