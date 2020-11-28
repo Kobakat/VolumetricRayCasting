@@ -57,7 +57,14 @@ float sdCone(in float3 p, in float2 c, float h)
 
 float4 opAdd(float4 d1, float4 d2) 
 {
-	return min(d1, d2);
+	float3 col = d1.rgb;
+
+	if (d2.w < d1.w)
+		col = d2.rgb;
+
+	float dst = min(d1.w, d2.w);
+
+	return float4(col, dst);
 }
 
 float4 opSubtract(float4 d1, float4 d2) 
@@ -67,7 +74,10 @@ float4 opSubtract(float4 d1, float4 d2)
 
 float4 opIntersect(float4 d1, float4 d2) 
 {
-	return max(d1, d2);
+	float3 col = lerp(d1.rgb, d2.rgb, 0.5f);
+	float dst = max(d1.w, d2.w);
+
+	return float4(col, dst);
 }
 
 float4 opBlend(float4 d1, float4 d2, float k) 
