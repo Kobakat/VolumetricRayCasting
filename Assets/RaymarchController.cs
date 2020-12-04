@@ -1,16 +1,14 @@
 ﻿using UnityEngine;
 using UnityEditor;
 using System.Collections.Generic;
+using System;
 
 [ExecuteInEditMode]
 [RequireComponent(typeof(Camera))]
 
 public class RaymarchController : SceneViewFilter
 {
-    public Color _MainColor;
-
     [SerializeField] Shader _Shader = null;
-
     Material _material;
     Camera _cam;
     Transform _light;
@@ -18,8 +16,24 @@ public class RaymarchController : SceneViewFilter
     List<ComputeBuffer> disposeBuffers;
     List<Operation> operations;
     List<RaymarchShape> shapes;
-
     int operationCount;
+
+    //User properties
+    public Color emissiveColor = Color.white;
+    public bool darkMode = false;
+    public bool useLighting = true;
+
+    public int highlightGradient = 20;
+    public float highlightStrength = 3.0f;
+    public float nonHighlightStrength = 0.5f;
+
+    public enum Filter { None, Highlight }
+    public enum HighlightType { ShapeColor, SingleColor }
+
+    public Filter filter = Filter.None;
+    public HighlightType highlightType = HighlightType.ShapeColor;
+
+
     public Material Material
     {
         get
@@ -109,13 +123,7 @@ public class RaymarchController : SceneViewFilter
             return;
         }
 
-        //Passing Scene Values to raymarch shader
-        Material.SetMatrix("_Frustum", GetFrustum(Cam));
-        Material.SetMatrix("_CamMatrix", Cam.cameraToWorldMatrix);
-        Material.SetColor("_MainColor", _MainColor);
-        Material.SetVector("_Light", Light ? Light.forward : Vector3.down);
-        Material.SetInt("_OperationCount", operationCount);
-
+        SetMaterialProperties();
         FillBuffer();
 
         Blit(source, destination, Material, 0);
@@ -223,4 +231,22 @@ public class RaymarchController : SceneViewFilter
         shapes.Clear();    
     }
 
+    void SetMaterialProperties()
+    {
+        //Scene related
+        Material.SetMatrix("_Frustum", GetFrustum(Cam));
+        Material.SetMatrix("_CamMatrix", Cam.cameraToWorldMatrix);
+        Material.SetVector("_Light", Light ? Light.forward : Vector3.down);
+        Material.SetInt("_OperationCount", operationCount);
+
+        //User Control
+        Material.SetVector("_EmissiveColor", emissiveColor);
+        Material.SetInt("_UseLight", Convert.ToInt32(useLighting));
+        Material.SetInt("_DarkMode", Convert.ToInt32(darkMode));
+        Material.SetInt("_HighlightGradient", highlightGradient);
+        Material.SetInt("_Filter", (int)filter);
+        Material.SetInt("_Highlight", (int)highlightType);
+        Material.SetFloat("_HighlightStrength", highlightStrength);
+        Material.SetFloat("_NonHighlightStrength", nonHighlightStrength);
+    }
 }

@@ -33,10 +33,9 @@
             uniform int _Highlight;
             uniform int _HighlightGradient;
             uniform float _HighlightStrength;
+            uniform float _NonHighlightStrength;
             uniform float3 _EmissiveColor;
-
-
-
+            
             struct shape
             {
                 float3 position;
@@ -201,9 +200,9 @@
             {
                 fixed4 pixelColor = fixed4(0, 0, 0, 0);
                 
-                if (_DarkMode)
+                if (_DarkMode) 
                     pixelColor = fixed4(0, 0, 0, 1);
-                
+                              
                 float dst = 0;
 
                 for (int i = 0; i < maxSteps; i++)
@@ -227,8 +226,8 @@
                             case 0:
                                 pixelColor = NoFilter(light, surf.rgb);
                                 break;
-                            case 1;
-                                pixelColor = HighlightFilter(light, surf.rgb, i, _Highlight, _HighlightGradient, _HighlightStrength, _EmissiveColor);
+                            case 1:
+                                pixelColor = Highlight(light, surf.rgb, i, _Highlight, _HighlightGradient, _NonHighlightStrength, _HighlightStrength, _EmissiveColor);
                                 break;
                         }
                                         
@@ -247,7 +246,6 @@
                         break;
                 }
 
-                pixelColor = fixed4(0, 0, 0, 1);
                 return pixelColor;
 
             }
