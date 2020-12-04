@@ -19,22 +19,32 @@
             #include "UnityCG.cginc"
             #include "SDFunc.cginc"
             #include "VRCFilters.cginc"
+            #include "LightingFunctions.cginc"
 
+            //No region preprocess directives >:(
             //Scene info
             sampler2D _MainTex;
             uniform float4x4 _Frustum;
             uniform float4x4 _CamMatrix;
             uniform float3 _Light;
             uniform int _OperationCount;
-
             uniform bool _UseLight;
             uniform bool _DarkMode;
+
+            //Filter           
             uniform int _Filter;
             uniform int _Highlight;
             uniform int _HighlightGradient;
             uniform float _HighlightStrength;
             uniform float _NonHighlightStrength;
             uniform float3 _EmissiveColor;
+
+            //Light
+            uniform int _LightMode;
+            uniform float _LitMultiplier;
+            uniform float _UnlitMultiplier;
+            uniform bool _CustomAngle;
+            uniform float _FlipAngle;
             
             struct shape
             {
@@ -212,13 +222,25 @@
 
                     if (surf.w < epsilon)
                     {
-                        float light = 0;
+                        float light = 1;
                         float3 n = float3(1, 1, 1);
                         
                         if (_UseLight) 
                         {
                             n = CalculateNormal(r.position);
-                            light = dot(-_Light.xyz, n);
+                            
+                            switch (_LightMode) 
+                            {
+                                case 0:
+                                    light = Lambertian(_Light, n);
+                                    break;
+                                case 1:
+                                    if (_CustomAngle)
+                                        light = CelShade(_Light, n, _LitMultiplier, _UnlitMultiplier, _FlipAngle);
+                                    else
+                                        light = CelShade(_Light, n, _LitMultiplier, _UnlitMultiplier);
+                                    break;
+                            }
                         }
                         
                         switch (_Filter) 

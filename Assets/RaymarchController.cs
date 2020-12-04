@@ -8,7 +8,7 @@ using System;
 
 public class RaymarchController : SceneViewFilter
 {
-    [SerializeField] Shader _Shader = null;
+    
     Material _material;
     Camera _cam;
     Transform _light;
@@ -18,10 +18,15 @@ public class RaymarchController : SceneViewFilter
     List<RaymarchShape> shapes;
     int operationCount;
 
-    //User properties
-    public Color emissiveColor = Color.white;
+    #region Exposed Props
+    [SerializeField] Shader _Shader = null;
+
     public bool darkMode = false;
     public bool useLighting = true;
+    #endregion
+
+    #region Filter Props
+    public Color emissiveColor = Color.white;
 
     public int highlightGradient = 20;
     public float highlightStrength = 3.0f;
@@ -30,9 +35,23 @@ public class RaymarchController : SceneViewFilter
     public enum Filter { None, Highlight }
     public enum HighlightType { ShapeColor, SingleColor }
 
+
     public Filter filter = Filter.None;
     public HighlightType highlightType = HighlightType.ShapeColor;
+    #endregion
 
+    #region Light Props
+
+    public enum LightMode { Lambertian, CelShaded }
+
+    public LightMode lightMode = LightMode.Lambertian;
+
+    public float unlitMultiplier = 0.5f;
+    public float litMultiplier = 1.0f;
+    public float flipAngle = 90.0f;
+
+    public bool customAngle = false;
+    #endregion
 
     public Material Material
     {
@@ -233,13 +252,14 @@ public class RaymarchController : SceneViewFilter
 
     void SetMaterialProperties()
     {
-        //Scene related
+        #region Scene
         Material.SetMatrix("_Frustum", GetFrustum(Cam));
         Material.SetMatrix("_CamMatrix", Cam.cameraToWorldMatrix);
         Material.SetVector("_Light", Light ? Light.forward : Vector3.down);
         Material.SetInt("_OperationCount", operationCount);
+        #endregion
 
-        //User Control
+        #region Filter
         Material.SetVector("_EmissiveColor", emissiveColor);
         Material.SetInt("_UseLight", Convert.ToInt32(useLighting));
         Material.SetInt("_DarkMode", Convert.ToInt32(darkMode));
@@ -248,5 +268,14 @@ public class RaymarchController : SceneViewFilter
         Material.SetInt("_Highlight", (int)highlightType);
         Material.SetFloat("_HighlightStrength", highlightStrength);
         Material.SetFloat("_NonHighlightStrength", nonHighlightStrength);
+        #endregion
+
+        #region Lighting
+        Material.SetInt("_LightMode", (int)lightMode);
+        Material.SetFloat("_FlipAngle", flipAngle);
+        Material.SetFloat("_LitMultiplier", litMultiplier);
+        Material.SetFloat("_UnlitMultiplier", unlitMultiplier);
+        Material.SetInt("_CustomAngle", Convert.ToInt32(customAngle));
+        #endregion
     }
 }
