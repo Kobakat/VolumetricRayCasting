@@ -18,14 +18,23 @@
 
             #include "UnityCG.cginc"
             #include "SDFunc.cginc"
+            #include "VRCFilters.cginc"
 
             //Scene info
             sampler2D _MainTex;
-            uniform fixed4 _MainColor;
             uniform float4x4 _Frustum;
             uniform float4x4 _CamMatrix;
             uniform float3 _Light;
             uniform int _OperationCount;
+
+            uniform bool _UseLight;
+            uniform bool _DarkMode;
+            uniform int _Filter;
+            uniform int _Highlight;
+            uniform int _HighlightGradient;
+            uniform float _HighlightStrength;
+            uniform float3 _EmissiveColor;
+
 
 
             struct shape
@@ -68,11 +77,11 @@
 
             //How close does a ray have to get to be consider a hit
             //Higher values give a sharper definition of shape but lower performance
-            static const float epsilon = 0.01;
+            static const float epsilon = 0.001;
 
             //The maximum distance we want a ray to be from the nearest surface before giving up
             //Higher values give a longer draw distance but lower performance
-            static const float maxDist = 100;
+            static const float maxDist = 40;
 
             struct appdata
             {
@@ -186,39 +195,49 @@
                 float z = SurfaceDistance(float3(p.x, p.y, p.z + epsilon)).w - SurfaceDistance(float3(p.x, p.y, p.z - epsilon)).w;
 
                 return normalize(float3(x,y,z));
-            }
+            }         
 
-            //For each pixel on the screen
             fixed4 raymarch(ray r)
             {
-                //Start with a completely transparent pixel
                 fixed4 pixelColor = fixed4(0, 0, 0, 0);
-                //Cast out a ray at the pixel's UV coordinate
+                
+                if (_DarkMode)
+                    pixelColor = fixed4(0, 0, 0, 1);
+                
                 float dst = 0;
 
-                //For a maximum of <maxStep> times,
                 for (int i = 0; i < maxSteps; i++)
-                {
-                    //Determine the distance from the nearest shape in the scene
+                {                   
                     r.position = r.origin + r.direction * dst;
-                    float4 surfDist = SurfaceDistance(r.position);
+                    float4 surf = SurfaceDistance(r.position);
 
-                    //If the distance is sufficently small...
-                    if (surfDist.w < epsilon)
+                    if (surf.w < epsilon)
                     {
-                        //We "hit" the surface. Calculate the normal vector of the pixel and shade it based on the angle from the rays of light
-                        float3 n = CalculateNormal(r.position);
-
-                        //This uses the lambertian model of lighting https://en.wikipedia.org/wiki/Lambertian_reflectance
-                        float light = dot(-_Light.xyz, n);
-
-                        pixelColor = fixed4(surfDist.rgb * light, 1);
-                        break;
+                        float light = 0;
+                        float3 n = float3(1, 1, 1);
+                        
+                        if (_UseLight) 
+                        {
+                            n = CalculateNormal(r.position);
+                            light = dot(-_Light.xyz, n);
+                        }
+                        
+                        switch (_Filter) 
+                        {
+                            case 0:
+                                pixelColor = NoFilter(light, surf.rgb);
+                                break;
+                            case 1;
+                                pixelColor = HighlightFilter(light, surf.rgb, i, _Highlight, _HighlightGradient, _HighlightStrength, _EmissiveColor);
+                                break;
+                        }
+                                        
+                        return pixelColor;
                     }
 
                     //If the distance is not sufficently small, we missed.
                     //Move the ray's position forward and try again
-                    dst += surfDist.w;
+                    dst += surf.w;
 
 
                     //If the distance is very large or a mesh is in the way
@@ -228,7 +247,7 @@
                         break;
                 }
 
-                //Give the frag function the color we want the pixel to be
+                pixelColor = fixed4(0, 0, 0, 1);
                 return pixelColor;
 
             }
