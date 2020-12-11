@@ -13,10 +13,14 @@ public class RaymarchController : SceneViewFilter
     Camera _cam;
     Transform _light;
 
-    List<ComputeBuffer> disposeBuffers;
     List<Operation> operations;
     List<RaymarchShape> shapes;
+
+    ComputeBuffer opBuffer;
+    ComputeBuffer shapeBuffer;
+
     int operationCount;
+    int children = 0;
 
     #region Exposed Props
     [SerializeField] Shader _Shader = null;
@@ -134,8 +138,7 @@ public class RaymarchController : SceneViewFilter
     [ImageEffectOpaque]
     void OnRenderImage(RenderTexture source, RenderTexture destination)
     {
-        disposeBuffers = new List<ComputeBuffer>();
-
+        
         if (!Material)
         {
             Graphics.Blit(source, destination);
@@ -143,17 +146,15 @@ public class RaymarchController : SceneViewFilter
         }
 
         SetMaterialProperties();
+        CheckForTransformChange();
         FillBuffer();
 
         Blit(source, destination, Material, 0);
-
-        foreach (ComputeBuffer buffer in disposeBuffers)
-        {
-            buffer.Dispose();
-        }
+        
+        opBuffer.Dispose();
+        shapeBuffer.Dispose();      
     }
 
-    
     //Returns a matrix containing the corner positions of the camera's view frustum
     Matrix4x4 GetFrustum(Camera cam)
     {
@@ -182,17 +183,6 @@ public class RaymarchController : SceneViewFilter
 
     void FillBuffer()
     {
-        operations = new List<Operation>(FindObjectsOfType<Operation>());
-
-        operationCount = operations.Count;
-
-        shapes = new List<RaymarchShape>(FindObjectsOfType<RaymarchShape>());
-        
-        for (int i = 0; i < operations.Count; i++)
-        {
-            operations[i].childCount = operations[i].transform.childCount;
-        }
-
         OperationInfo[] opInfo = new OperationInfo[operations.Count];
 
         for (int i = 0; i < operations.Count; i ++)
@@ -234,20 +224,14 @@ public class RaymarchController : SceneViewFilter
             };
         }        
 
-        ComputeBuffer opBuffer = new ComputeBuffer(opInfo.Length, OperationInfo.GetSize());
-        ComputeBuffer shapeBuffer = new ComputeBuffer(shapeInfo.Length, ShapeInfo.GetSize());
+        opBuffer = new ComputeBuffer(opInfo.Length, OperationInfo.GetSize());
+        shapeBuffer = new ComputeBuffer(shapeInfo.Length, ShapeInfo.GetSize());
 
         opBuffer.SetData(opInfo);
         shapeBuffer.SetData(shapeInfo);
 
         Material.SetBuffer("operations", opBuffer);
-        Material.SetBuffer("shapes", shapeBuffer);
-
-        disposeBuffers.Add(opBuffer);
-        disposeBuffers.Add(shapeBuffer);
-
-        operations.Clear();
-        shapes.Clear();    
+        Material.SetBuffer("shapes", shapeBuffer); 
     }
 
     void SetMaterialProperties()
@@ -277,5 +261,52 @@ public class RaymarchController : SceneViewFilter
         Material.SetFloat("_UnlitMultiplier", unlitMultiplier);
         Material.SetInt("_CustomAngle", Convert.ToInt32(customAngle));
         #endregion
+    }
+
+    void CheckForTransformChange()
+    {
+        int childTransformCount = 0;
+
+        for (int i = 0; i < Camera.main.transform.childCount; i++)
+        {
+            childTransformCount++;
+
+            for (int j = 0; j < Camera.main.transform.GetChild(i).transform.childCount; j++)
+            {
+                childTransformCount++;
+            }
+        }
+
+        if(children != childTransformCount)
+        {
+            children = childTransformCount;
+            UpdateComponentLists();
+        }
+    }
+
+    void UpdateComponentLists()
+    {
+        operations = new List<Operation>();
+        shapes = new List<RaymarchShape>();
+
+        for (int i = 0; i < Camera.main.transform.childCount; i++)
+        {
+            int count = 0;
+
+            if (Camera.main.transform.GetChild(i).GetComponent<Operation>())
+                operations.Add(Camera.main.transform.GetChild(i).GetComponent<Operation>());
+
+            for (int j = 0; j < operations[i].transform.childCount; j++)
+            {
+                if (operations[i].transform.GetChild(j).GetComponent<RaymarchShape>())
+                {
+                    shapes.Add(operations[i].transform.GetChild(j).GetComponent<RaymarchShape>());
+                    count++;                    
+                }                   
+            }
+            operations[i].childCount = count;
+        }
+
+        operationCount = operations.Count;       
     }
 }
