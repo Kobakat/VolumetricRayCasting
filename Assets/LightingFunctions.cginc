@@ -20,7 +20,7 @@ float CelShade(float3 lightDir, float3 normal, float litMultiplier, float unlitM
 	if (dotprod >= 0)
 		return litMultiplier;
 	else
-		return litMultiplier;
+		return unlitMultiplier;
 }
 
 //This overload allows for the angle between the normal of the shape surface and the light source

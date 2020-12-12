@@ -23,24 +23,30 @@ public class RaymarchController : SceneViewFilter
     int children = 0;
 
     #region Exposed Props
+    [Tooltip("Assign the Raymarch shader here")]
     [SerializeField] Shader _Shader = null;
 
+    [Tooltip("Default pixel return color is set to black when enabled")]
     public bool darkMode = false;
+    [Tooltip("Whether or not to calculate the surface normals. Lighting is significantly expensive to calculate.")]
     public bool useLighting = true;
     #endregion
 
     #region Filter Props
     public Color emissiveColor = Color.white;
-
+    [Tooltip("How many steps each ray has to take before deciding to highlight that particular pixel")]
     public int highlightGradient = 20;
+    [Tooltip("How much brighter to highlight the highlighted surface")]
     public float highlightStrength = 3.0f;
+    [Tooltip("How much darker to dull unhighlighted surface")]
     public float nonHighlightStrength = 0.5f;
 
     public enum Filter { None, Highlight }
     public enum HighlightType { ShapeColor, SingleColor }
 
-
+    [Tooltip("Which filter to apply to the camera")]
     public Filter filter = Filter.None;
+    [Tooltip("Should the highlight be one singular color or defined by the shape")]
     public HighlightType highlightType = HighlightType.ShapeColor;
     #endregion
 
@@ -48,12 +54,17 @@ public class RaymarchController : SceneViewFilter
 
     public enum LightMode { Lambertian, CelShaded }
 
+    [Tooltip("The lighting model used with the surface normals to light the shape")]
     public LightMode lightMode = LightMode.Lambertian;
 
+    [Tooltip("How much darker to dull the unlit surface")]
     public float unlitMultiplier = 0.5f;
+    [Tooltip("How much brighter to light the lit surface")]
     public float litMultiplier = 1.0f;
+    [Tooltip("At what angle between the light direction and surface normals of the shape should the surface be considered unlit")]
     public float flipAngle = 90.0f;
 
+    [Tooltip("Custom Angle is more expensive to render. Default is 90.")]
     public bool customAngle = false;
     #endregion
 

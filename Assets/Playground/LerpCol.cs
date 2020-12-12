@@ -8,15 +8,14 @@ public class LerpCol : MonoBehaviour
 
     private void Start()
     {
-        shape = GetComponent<RaymarchShape>();
+        shape = GetComponent<RaymarchShape>();     
     }
 
     void Update()
-    {
+    { 
         shape.color.r = Mathf.Sin(Time.time);
         shape.color.g = Mathf.Cos(Time.time);
-        shape.color.b = Mathf.Cos(Time.time) * Mathf.Sin(Time.time) * 2;
-
+        shape.color.b = Mathf.Cos(Time.time) * Mathf.Sin(Time.time) * 2;      
     }
 
 
