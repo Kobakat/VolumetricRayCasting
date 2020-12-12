@@ -101,8 +101,7 @@ public class RaymarchController : SceneViewFilter
             return _light;
         }
     }
-
-
+ 
     static void Blit(RenderTexture source, RenderTexture destination, Material mat, int pass)
     {
         RenderTexture.active = destination;
@@ -134,11 +133,19 @@ public class RaymarchController : SceneViewFilter
         GL.PopMatrix();
     }
 
+    void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            UpdateComponentLists();
+        }
+    }
     //Unity event function, called when an image is done rendering to apply post processing effects
     [ImageEffectOpaque]
     void OnRenderImage(RenderTexture source, RenderTexture destination)
     {
         
+
         if (!Material)
         {
             Graphics.Blit(source, destination);
@@ -189,6 +196,12 @@ public class RaymarchController : SceneViewFilter
         {
             Operation o = operations[i];
 
+            if (o == null)
+            {
+                UpdateComponentLists();
+                o = operations[i];
+            }
+                
             opInfo[i] = new OperationInfo()
             {
                 operation = (int)o.operation,
@@ -202,7 +215,13 @@ public class RaymarchController : SceneViewFilter
         for (int i = 0; i < shapes.Count; i++)
         {
             RaymarchShape s = shapes[i];
-
+            
+            if (s == null)
+            {
+                UpdateComponentLists();
+                s = shapes[i];
+            }
+                
             shapeInfo[i] = new ShapeInfo()
             {
                 position = s.transform.position,

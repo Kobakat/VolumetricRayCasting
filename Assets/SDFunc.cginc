@@ -69,7 +69,14 @@ float4 opAdd(float4 d1, float4 d2)
 
 float4 opSubtract(float4 d1, float4 d2) 
 {
-	return max(-d1, d2);
+	float3 col = d1.rgb;
+
+	if (d2.w < d1.w)
+		col = d2.rgb;
+
+	float dst = max(d1.w, -d2.w);
+
+	return float4(col, dst);
 }
 
 float4 opIntersect(float4 d1, float4 d2) 
